@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Send PDF Data to Main API</title>
+<style>
+body { font-family: Arial; max-width:600px; margin:40px auto; padding:20px; }
+h2 { color: #333; }
+input, button { width:100%; padding:10px; margin:5px 0; font-size:16px; }
+button { background:#4CAF50; color:white; border:none; cursor:pointer; }
+button:hover { background:#45a049; }
+button:disabled { background:#ccc; cursor: not-allowed; }
+pre { background:#f4f4f4; padding:10px; border-radius:6px; overflow-x:auto; }
+#popup {
+    display:none;
+    padding:15px;
+    margin:10px 0;
+    border-radius:6px;
+    font-weight:bold;
+}
+#popup.success { background:#d4edda; color:#155724; border:1px solid #c3e6cb; }
+#popup.error { background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; }
+#popup.warning { background:#fff3cd; color:#856404; border:1px solid #ffeeba; }
+#loader { display:none; margin-top:10px; }
+</style>
+</head>
+<body>
+<h2>Send PDF Data to Main API</h2>
+
+<p>1️⃣ Select PDF file:</p>
+<input type="file" id="pdfFile">
+
+<p>2️⃣ Enter Main API URL:</p>
+<input type="text" id="apiURL" placeholder="e.g. https://yourapp.com/api/add-user">
+
+<button id="sendBtn" onclick="sendPDF()" disabled>Send PDF Data</button>
+
+<div id="loader">⏳ Sending PDF...</div>
+<div id="popup"></div>
+
+<pre id="response"></pre>
+
+<script src="https://unpkg.com/pdfjs-dist/build/pdf.min.js"></script>
+<script>
+const pdfFileInput = document.getElementById("pdfFile");
+const sendBtn = document.getElementById("sendBtn");
+const popup = document.getElementById("popup");
+const loader = document.getElementById("loader");
+
+// Enable send button only if file selected
+pdfFileInput.addEventListener("change", ()=>{
+    sendBtn.disabled = pdfFileInput.files.length === 0;
+});
+
+// Show popup message
+function showPopup(msg, type="success"){
+    popup.textContent = msg;
+    popup.className = "";
+    popup.classList.add(type);
+    popup.style.display = "block";
+    setTimeout(()=>{ popup.style.display="none"; }, 4000);
+}
+
+// Send PDF function
+async function sendPDF() {
+    const fileInput = pdfFileInput;
+    const apiURL = document.getElementById("apiURL").value.trim();
+    if(fileInput.files.length===0){ showPopup("Select a PDF file", "error"); return; }
+    if(!apiURL){ showPopup("Enter API URL", "error"); return; }
+
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    loader.style.display = "block";
+    sendBtn.disabled = true;
+
+    reader.onload = async function(e) {
+        try {
+            const typedarray = new Uint8Array(e.target.result);
+            const pdf = await pdfjsLib.getDocument(typedarray).promise;
+            let textContent = "";
+            for(let i=0; i<pdf.numPages; i++){
+                const page = await pdf.getPage(i+1);
+                const text = await page.getTextContent();
+                text.items.forEach(item => textContent += item.str + "\n");
+            }
+
+            // Extract Name, Age, Email
+            const lines = textContent.split("\n");
+            let data = {};
+            lines.forEach(line => {
+                if(line.toLowerCase().startsWith("name:")) data.name = line.split(":")[1].trim();
+                if(line.toLowerCase().startsWith("age:")) data.age = parseInt(line.split(":")[1].trim());
+                if(line.toLowerCase().startsWith("email:")) data.email = line.split(":")[1].trim();
+            });
+
+            if(!data.name || !data.age || !data.email){
+                showPopup("PDF must contain Name, Age, and Email.", "error");
+                loader.style.display = "none";
+                sendBtn.disabled = false;
+                return;
+            }
+
+            // Send to Main API
+            const res = await fetch(apiURL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+            const json = await res.json();
+            document.getElementById("response").textContent = JSON.stringify(json, null, 2);
+
+            if(json.status === "success"){
+                showPopup("Send Successful ✅", "success");
+            } else if(json.status === "exists"){
+                showPopup("User already exists ⚠️", "warning");
+            } else {
+                showPopup("Response received", "success");
+            }
+        } catch(err){
+            console.error(err);
+            showPopup("Error sending data to API", "error");
+        } finally {
+            loader.style.display = "none";
+            sendBtn.disabled = false;
+        }
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+</script>
+</body>
+</html>
