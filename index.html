@@ -2,92 +2,95 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Test PDF Sender</title>
+<title>Test API Website</title>
 <style>
-body { font-family: Arial; max-width:600px; margin:40px auto; padding:20px; }
-h2 { color: #333; }
-input, button { width:100%; padding:10px; margin:5px 0; font-size:16px; }
-button { background:#4CAF50; color:white; border:none; cursor:pointer; }
-button:hover { background:#45a049; }
-pre { background:#f4f4f4; padding:10px; border-radius:6px; overflow-x:auto; }
+body{
+  font-family: Arial;
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+input, button{
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  font-size: 16px;
+}
+button{
+  background: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+button:hover{
+  background: #45a049;
+}
+#msg{
+  margin-top: 15px;
+  font-weight: bold;
+}
 </style>
 </head>
 <body>
-<h2>Send PDF Data to Main API</h2>
 
-<p>1️⃣ Select PDF file:</p>
-<input type="file" id="pdfFile">
+<h2>Student Form (External Website)</h2>
 
-<p>2️⃣ Enter Main API URL:</p>
-<input type="text" id="apiURL" placeholder="e.g. https://yourapp.com/api/add-user">
+<input id="apiKey" placeholder="Paste API Key here">
+<input id="name" placeholder="Student Name">
+<input id="age" type="number" placeholder="Age">
+<input id="email" type="email" placeholder="Email">
 
-<p>3️⃣ Enter API Key:</p>
-<input type="text" id="apiKey" placeholder="Your API Key">
+<button onclick="submitData()">Next</button>
 
-<button onclick="sendPDF()">Send PDF Data</button>
+<div id="msg"></div>
 
-<pre id="response"></pre>
-
-<script src="https://unpkg.com/pdfjs-dist/build/pdf.min.js"></script>
 <script>
-async function sendPDF() {
-    const fileInput = document.getElementById("pdfFile");
-    const apiURL = document.getElementById("apiURL").value.trim();
-    const apiKey = document.getElementById("apiKey").value.trim();
+async function submitData(){
+  const apiKey = document.getElementById("apiKey").value;
+  const name   = document.getElementById("name").value;
+  const age    = document.getElementById("age").value;
+  const email  = document.getElementById("email").value;
 
-    if(fileInput.files.length===0){ alert("Select a PDF file"); return; }
-    if(!apiURL){ alert("Enter API URL"); return; }
-    if(!apiKey){ alert("Enter API Key"); return; }
+  if(!apiKey || !name || !age || !email){
+    document.getElementById("msg").innerText = "❌ All fields required";
+    return;
+  }
 
-    const file = fileInput.files[0];
-    const reader = new FileReader();
+  try{
+    const res = await fetch(
+      "https://YOUR-HF-SPACE.hf.space/external/add-user",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-KEY": apiKey
+        },
+        body: JSON.stringify({
+          name: name,
+          age: parseInt(age),
+          email: email
+        })
+      }
+    );
 
-    reader.onload = async function(e) {
-        const typedarray = new Uint8Array(e.target.result);
-        const pdf = await pdfjsLib.getDocument(typedarray).promise;
-        let textContent = "";
+    const data = await res.json();
 
-        for(let i=0; i<pdf.numPages; i++){
-            const page = await pdf.getPage(i+1);
-            const text = await page.getTextContent();
-            text.items.forEach(item => textContent += item.str + "\n");
-        }
+    if(res.ok){
+      document.getElementById("msg").innerText = "✅ Successfully";
+      document.getElementById("msg").style.color = "green";
+    }else{
+      document.getElementById("msg").innerText = "❌ " + data.detail;
+      document.getElementById("msg").style.color = "red";
+    }
 
-        // Extract Name, Age, Email
-        const lines = textContent.split("\n");
-        let data = {};
-        lines.forEach(line => {
-            if(line.toLowerCase().startsWith("name:")) data.name = line.split(":")[1].trim();
-            if(line.toLowerCase().startsWith("age:")) data.age = parseInt(line.split(":")[1].trim());
-            if(line.toLowerCase().startsWith("email:")) data.email = line.split(":")[1].trim();
-        });
-
-        if(!data.name || !data.age || !data.email){
-            alert("PDF must contain Name, Age, and Email in proper format.");
-            return;
-        }
-
-        // Send to Main API
-        try {
-            const res = await fetch(apiURL, {
-                method: "POST",
-                headers: { 
-                    "Content-Type": "application/json",
-                    "x-api-key": apiKey
-                },
-                body: JSON.stringify(data)
-            });
-            const json = await res.json();
-            document.getElementById("response").textContent = JSON.stringify(json, null, 2);
-            alert("Data sent successfully!");
-        } catch(err){
-            console.error(err);
-            alert("Error sending data to API.");
-        }
-    };
-
-    reader.readAsArrayBuffer(file);
+  }catch(err){
+    document.getElementById("msg").innerText = "❌ Server Error";
+    document.getElementById("msg").style.color = "red";
+  }
 }
 </script>
+
 </body>
 </html>
