@@ -48,19 +48,21 @@ button:hover{
 
 <script>
 async function submitData(){
-  const apiKey = document.getElementById("apiKey").value;
-  const name   = document.getElementById("name").value;
-  const age    = document.getElementById("age").value;
-  const email  = document.getElementById("email").value;
+  const apiKey = document.getElementById("apiKey").value.trim();
+  const name   = document.getElementById("name").value.trim();
+  const age    = document.getElementById("age").value.trim();
+  const email  = document.getElementById("email").value.trim();
+  const msg    = document.getElementById("msg");
 
   if(!apiKey || !name || !age || !email){
-    document.getElementById("msg").innerText = "❌ All fields required";
+    msg.innerText = "❌ All fields required";
+    msg.style.color = "red";
     return;
   }
 
   try{
     const res = await fetch(
-      "https://YOUR-HF-SPACE.hf.space/external/add-user",
+      "https://YOUR-HF-SPACE.hf.space/external/add-user", // ✅ Replace with your HF Space URL
       {
         method: "POST",
         headers: {
@@ -69,25 +71,27 @@ async function submitData(){
         },
         body: JSON.stringify({
           name: name,
-          age: parseInt(age),
+          age: Number(age),
           email: email
         })
       }
     );
 
-    const data = await res.json();
+    const text = await res.text();  // Show raw response for debugging
+    console.log(text);
 
     if(res.ok){
-      document.getElementById("msg").innerText = "✅ Successfully";
-      document.getElementById("msg").style.color = "green";
+      msg.innerText = "✅ Successfully";
+      msg.style.color = "green";
     }else{
-      document.getElementById("msg").innerText = "❌ " + data.detail;
-      document.getElementById("msg").style.color = "red";
+      msg.innerText = "❌ " + text;
+      msg.style.color = "red";
     }
 
   }catch(err){
-    document.getElementById("msg").innerText = "❌ Server Error";
-    document.getElementById("msg").style.color = "red";
+    msg.innerText = "❌ Network / CORS Error";
+    msg.style.color = "red";
+    console.error(err);
   }
 }
 </script>
