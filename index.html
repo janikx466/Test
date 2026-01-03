@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Send PDF Data to Main API</title>
+<title>Test PDF Sender</title>
 <style>
 body { font-family: Arial; max-width:600px; margin:40px auto; padding:20px; }
 h2 { color: #333; }
@@ -18,8 +18,11 @@ pre { background:#f4f4f4; padding:10px; border-radius:6px; overflow-x:auto; }
 <p>1️⃣ Select PDF file:</p>
 <input type="file" id="pdfFile">
 
-<p>2️⃣ API URL (auto-set for Hugging Face deployed app):</p>
-<input type="text" id="apiURL" readonly value="https://sughrahanif-my-fast.hf.space/api/add-user">
+<p>2️⃣ Enter Main API URL:</p>
+<input type="text" id="apiURL" placeholder="e.g. https://yourapp.com/api/add-user">
+
+<p>3️⃣ Enter API Key:</p>
+<input type="text" id="apiKey" placeholder="Your API Key">
 
 <button onclick="sendPDF()">Send PDF Data</button>
 
@@ -30,8 +33,11 @@ pre { background:#f4f4f4; padding:10px; border-radius:6px; overflow-x:auto; }
 async function sendPDF() {
     const fileInput = document.getElementById("pdfFile");
     const apiURL = document.getElementById("apiURL").value.trim();
+    const apiKey = document.getElementById("apiKey").value.trim();
 
     if(fileInput.files.length===0){ alert("Select a PDF file"); return; }
+    if(!apiURL){ alert("Enter API URL"); return; }
+    if(!apiKey){ alert("Enter API Key"); return; }
 
     const file = fileInput.files[0];
     const reader = new FileReader();
@@ -65,16 +71,18 @@ async function sendPDF() {
         try {
             const res = await fetch(apiURL, {
                 method: "POST",
-                mode: "cors",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey
+                },
                 body: JSON.stringify(data)
             });
             const json = await res.json();
             document.getElementById("response").textContent = JSON.stringify(json, null, 2);
-            alert("✅ Data sent successfully!");
+            alert("Data sent successfully!");
         } catch(err){
-            console.error("Fetch error:", err);
-            alert("❌ Error sending data to API. Check console for details.");
+            console.error(err);
+            alert("Error sending data to API.");
         }
     };
 
