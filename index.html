@@ -6,40 +6,63 @@
 body{font-family:Arial;max-width:400px;margin:50px auto}
 input,button{width:100%;padding:10px;margin:8px 0}
 button{background:green;color:white;border:none}
+#msg{font-weight:bold}
 </style>
 </head>
 <body>
 
 <h2>External Website</h2>
 
-<input id="key" placeholder="API Key">
-<input id="name" placeholder="Name">
-<input id="age" type="number" placeholder="Age">
-<input id="email" placeholder="Email">
+<input id="apiKey" placeholder="API Key">
+
+<input id="stdName" placeholder="Student Name">
+<input id="stdAge" type="number" placeholder="Age">
+<input id="stdEmail" placeholder="Email">
+
 <button onclick="send()">Next</button>
 
 <p id="msg"></p>
 
 <script>
 async function send(){
+
+  const apiKey = document.getElementById("apiKey").value.trim();
+  const name   = document.getElementById("stdName").value.trim();
+  const age    = document.getElementById("stdAge").value.trim();
+  const email  = document.getElementById("stdEmail").value.trim();
+  const msg    = document.getElementById("msg");
+
+  if(!apiKey || !name || !age || !email){
+    msg.innerText = "❌ All fields required";
+    msg.style.color = "red";
+    return;
+  }
+
   const res = await fetch(
     "https://tahirvjakis-student-fastapi.hf.space/external/add-user",
     {
       method:"POST",
       headers:{
         "Content-Type":"application/json",
-        "X-API-KEY":key.value
+        "X-API-KEY": apiKey
       },
-      body:JSON.stringify({
-        name:name.value,
-        age:Number(age.value),
-        email:email.value
+      body: JSON.stringify({
+        name: name,
+        age: Number(age),
+        email: email
       })
     }
   );
 
-  const txt = await res.text();
-  msg.innerText = res.ok ? "✅ Success" : "❌ " + txt;
+  const text = await res.text();
+
+  if(res.ok){
+    msg.innerText = "✅ Successfully added";
+    msg.style.color = "green";
+  }else{
+    msg.innerText = "❌ " + text;
+    msg.style.color = "red";
+  }
 }
 </script>
 
