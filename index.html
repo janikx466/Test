@@ -1,98 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Test API Website</title>
+<title>External Student Form</title>
 <style>
-body{
-  font-family: Arial;
-  max-width: 400px;
-  margin: 50px auto;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-}
-input, button{
-  width: 100%;
-  padding: 10px;
-  margin: 8px 0;
-  font-size: 16px;
-}
-button{
-  background: #4CAF50;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-button:hover{
-  background: #45a049;
-}
-#msg{
-  margin-top: 15px;
-  font-weight: bold;
-}
+body{font-family:Arial;max-width:400px;margin:50px auto}
+input,button{width:100%;padding:10px;margin:8px 0}
+button{background:green;color:white;border:none}
 </style>
 </head>
 <body>
 
-<h2>Student Form (External Website)</h2>
+<h2>External Website</h2>
 
-<input id="apiKey" placeholder="Paste API Key here">
-<input id="name" placeholder="Student Name">
+<input id="key" placeholder="API Key">
+<input id="name" placeholder="Name">
 <input id="age" type="number" placeholder="Age">
-<input id="email" type="email" placeholder="Email">
+<input id="email" placeholder="Email">
+<button onclick="send()">Next</button>
 
-<button onclick="submitData()">Next</button>
-
-<div id="msg"></div>
+<p id="msg"></p>
 
 <script>
-async function submitData(){
-  const apiKey = document.getElementById("apiKey").value.trim();
-  const name   = document.getElementById("name").value.trim();
-  const age    = document.getElementById("age").value.trim();
-  const email  = document.getElementById("email").value.trim();
-  const msg    = document.getElementById("msg");
-
-  if(!apiKey || !name || !age || !email){
-    msg.innerText = "❌ All fields required";
-    msg.style.color = "red";
-    return;
-  }
-
-  try{
-    const res = await fetch(
-      "https://YOUR-HF-SPACE.hf.space/external/add-user", // ✅ Replace with your HF Space URL
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-API-KEY": apiKey
-        },
-        body: JSON.stringify({
-          name: name,
-          age: Number(age),
-          email: email
-        })
-      }
-    );
-
-    const text = await res.text();  // Show raw response for debugging
-    console.log(text);
-
-    if(res.ok){
-      msg.innerText = "✅ Successfully";
-      msg.style.color = "green";
-    }else{
-      msg.innerText = "❌ " + text;
-      msg.style.color = "red";
+async function send(){
+  const res = await fetch(
+    "https://tahirvjakis-student-fastapi.hf.space/external/add-user",
+    {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "X-API-KEY":key.value
+      },
+      body:JSON.stringify({
+        name:name.value,
+        age:Number(age.value),
+        email:email.value
+      })
     }
+  );
 
-  }catch(err){
-    msg.innerText = "❌ Network / CORS Error";
-    msg.style.color = "red";
-    console.error(err);
-  }
+  const txt = await res.text();
+  msg.innerText = res.ok ? "✅ Success" : "❌ " + txt;
 }
 </script>
 
