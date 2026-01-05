@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>External Student Form</title>
 
-<!-- ✅ FAVICON (Cloudinary URL) -->
+<!-- Favicon -->
 <link rel="icon" type="image/png" sizes="32x32"
 href="https://res.cloudinary.com/dex1veqf2/image/upload/v1767539506/c8s8d0vrbtu4g5klfajj.png">
 
@@ -47,18 +47,16 @@ button:hover{opacity:0.9}
 <h2>External Website</h2>
 
 <input id="apiKey" placeholder="API Key">
-
 <input id="stdName" placeholder="Student Name">
 <input id="stdAge" type="number" placeholder="Age">
 <input id="stdEmail" placeholder="Email">
 
-<button onclick="send()">Next</button>
+<button onclick="send()">Submit</button>
 
 <p id="msg"></p>
 
 <script>
 async function send(){
-
   const apiKey = document.getElementById("apiKey").value.trim();
   const name   = document.getElementById("stdName").value.trim();
   const age    = document.getElementById("stdAge").value.trim();
@@ -71,33 +69,43 @@ async function send(){
     return;
   }
 
-  const res = await fetch(
-    "https://tahirvjakis-student-fastapi.hf.space/external/add-user",
-    {
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "X-API-KEY": apiKey
-      },
-      body: JSON.stringify({
-        name: name,
-        age: Number(age),
-        email: email
-      })
+  try {
+    const res = await fetch(
+      "https://tahirvjakis-student-fastapi.hf.space/external/add-user",
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "x-api-key": apiKey   // <-- lowercase to match backend
+        },
+        body: JSON.stringify({
+          name: name,
+          age: Number(age),
+          email: email
+        })
+      }
+    );
+
+    const text = await res.text();
+
+    if(res.ok){
+      msg.innerText = "✅ Successfully added";
+      msg.style.color = "green";
+      // Optional: clear form
+      document.getElementById("stdName").value = "";
+      document.getElementById("stdAge").value = "";
+      document.getElementById("stdEmail").value = "";
+    } else {
+      msg.innerText = "❌ " + text;
+      msg.style.color = "red";
     }
-  );
-
-  const text = await res.text();
-
-  if(res.ok){
-    msg.innerText = "✅ Successfully added";
-    msg.style.color = "green";
-  }else{
-    msg.innerText = "❌ " + text;
+  } catch(e){
+    msg.innerText = "❌ Network error or backend not reachable";
     msg.style.color = "red";
+    console.error(e);
   }
 }
 </script>
 
 </body>
-</html>
+  </html>
