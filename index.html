@@ -3,52 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>API Generator Test</title>
+<title>API Generator / Student Submission</title>
+
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+
 <style>
-body{
-  font-family: Arial, sans-serif;
-  max-width:450px;
-  margin:50px auto;
-  padding:20px;
-  background:#f0f2f5;
+/* Notification box animation */
+@keyframes slideDown {
+  0% { transform: translateY(-20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
 }
-h2{text-align:center;margin-bottom:20px;}
-input,button{
-  width:100%;
-  padding:12px;
-  margin:8px 0;
-  font-size:16px;
-}
-input{border:1px solid #ccc;border-radius:5px;}
-button{
-  background:#2563eb;
-  color:white;
-  border:none;
-  border-radius:5px;
-  font-weight:bold;
-  cursor:pointer;
-}
-button:hover{opacity:0.9}
-#msg{
-  font-weight:bold;
-  text-align:center;
-  margin-top:15px;
-  white-space: pre-wrap;
+.notification {
+  animation: slideDown 0.5s ease forwards;
 }
 </style>
 </head>
-<body>
 
-<h2>API Generator Test</h2>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center p-4">
 
-<input id="apiKey" placeholder="Paste API Key">
-<input id="stdName" placeholder="Student Name">
-<input id="stdAge" type="number" placeholder="Age">
-<input id="stdEmail" placeholder="Email">
+<div class="w-full max-w-md bg-white rounded-lg shadow-lg p-6 mt-10">
+  <h2 class="text-2xl font-bold text-center mb-6 text-blue-600">Student Submission</h2>
 
-<button onclick="send()">Send POST Request</button>
+  <!-- API Key Input -->
+  <input id="apiKey" placeholder="Paste API Key" class="w-full p-3 mb-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
 
-<pre id="msg"></pre>
+  <!-- Student Inputs -->
+  <input id="stdName" placeholder="Student Name" class="w-full p-3 mb-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+  <input id="stdAge" type="number" placeholder="Age" class="w-full p-3 mb-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+  <input id="stdEmail" placeholder="Email" class="w-full p-3 mb-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+
+  <button onclick="send()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded transition duration-200">Submit Student</button>
+
+  <!-- Notification Box -->
+  <div id="msg" class="mt-4 text-center font-semibold text-lg"></div>
+</div>
 
 <script>
 async function send(){
@@ -59,43 +48,51 @@ async function send(){
   const msg = document.getElementById("msg");
 
   if(!apiKey || !name || !age || !email){
-    msg.textContent = "❌ All fields required";
-    msg.style.color="red";
+    msg.textContent = "❌ All fields are required!";
+    msg.style.color = "red";
+    msg.classList.add("notification");
     return;
   }
 
-  msg.textContent = "⏳ Sending POST request...";
-  msg.style.color="#333";
+  msg.textContent = "⏳ Sending data...";
+  msg.style.color = "#333";
+  msg.classList.add("notification");
 
-  try{
-    const res = await fetch(
-      "https://tahirvjakis-api.hf.space/external/add-user",
-      {
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
-          "X-API-KEY": apiKey
-        },
-        body: JSON.stringify({name, age:Number(age), email})
-      }
-    );
+  try {
+    const res = await fetch("https://tahirvjakis-api.hf.space/external/add-user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-KEY": apiKey
+      },
+      body: JSON.stringify({ name, age: Number(age), email })
+    });
 
     const text = await res.text();
+
     if(res.ok){
-      msg.textContent = "✅ Success:\n" + text;
-      msg.style.color="green";
+      msg.textContent = "✅ Submitted successfully! Waiting for approval.";
+      msg.style.color = "green";
+      msg.classList.add("notification");
+
+      // Clear form fields
+      document.getElementById("stdName").value = "";
+      document.getElementById("stdAge").value = "";
+      document.getElementById("stdEmail").value = "";
     } else {
-      msg.textContent = "❌ Error:\n" + text;
-      msg.style.color="red";
+      msg.textContent = "❌ Error: " + text;
+      msg.style.color = "red";
+      msg.classList.add("notification");
     }
 
   } catch(err){
-    msg.textContent = "❌ Network error or backend not reachable\n" + err;
-    msg.style.color="red";
+    msg.textContent = "❌ Network error or backend unreachable!";
+    msg.style.color = "red";
+    msg.classList.add("notification");
     console.error(err);
   }
 }
 </script>
 
 </body>
-</html>
+  </html>
