@@ -3,50 +3,68 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>External Student Form</title>
 
-<!-- Favicon -->
+<!-- ✅ Favicon -->
 <link rel="icon" type="image/png" sizes="32x32"
 href="https://res.cloudinary.com/dex1veqf2/image/upload/v1767539506/c8s8d0vrbtu4g5klfajj.png">
-
 <link rel="icon" type="image/png" sizes="16x16"
 href="https://res.cloudinary.com/dex1veqf2/image/upload/v1767539506/c8s8d0vrbtu4g5klfajj.png">
 
 <style>
 body{
-  font-family: Arial;
-  max-width:400px;
+  font-family: Arial, sans-serif;
+  max-width:420px;
   margin:50px auto;
   padding:20px;
-  background:#f7f7f7;
+  background:#f5f7fb;
 }
-h2{text-align:center}
-input,button{
+h2{
+  text-align:center;
+  margin-bottom:20px;
+}
+input, button{
   width:100%;
-  padding:10px;
+  padding:12px;
   margin:8px 0;
   font-size:16px;
 }
+input{
+  border:1px solid #ccc;
+  border-radius:5px;
+}
 button{
-  background:green;
+  background:#16a34a;
   color:white;
   border:none;
+  border-radius:5px;
+  font-weight:bold;
   cursor:pointer;
 }
-button:hover{opacity:0.9}
+button:hover{
+  opacity:0.9;
+}
 #msg{
   font-weight:bold;
   text-align:center;
-  margin-top:10px;
+  margin-top:12px;
+}
+.footer{
+  text-align:center;
+  font-size:13px;
+  color:#666;
+  margin-top:20px;
 }
 </style>
 </head>
 
 <body>
 
-<h2>External Website</h2>
+<h2>External Student Form</h2>
 
-<input id="apiKey" placeholder="API Key">
+<input id="apiKey" placeholder="Paste API Key here">
+
 <input id="stdName" placeholder="Student Name">
 <input id="stdAge" type="number" placeholder="Age">
 <input id="stdEmail" placeholder="Email">
@@ -55,8 +73,13 @@ button:hover{opacity:0.9}
 
 <p id="msg"></p>
 
+<div class="footer">
+Powered by API Generator
+</div>
+
 <script>
 async function send(){
+
   const apiKey = document.getElementById("apiKey").value.trim();
   const name   = document.getElementById("stdName").value.trim();
   const age    = document.getElementById("stdAge").value.trim();
@@ -64,19 +87,22 @@ async function send(){
   const msg    = document.getElementById("msg");
 
   if(!apiKey || !name || !age || !email){
-    msg.innerText = "❌ All fields required";
+    msg.innerText = "❌ All fields are required";
     msg.style.color = "red";
     return;
   }
 
-  try {
+  msg.innerText = "⏳ Sending...";
+  msg.style.color = "#333";
+
+  try{
     const res = await fetch(
-      "https://tahirvjakis-student-fastapi.hf.space/external/add-user",
+      "https://tahirvjakis-api.hf.space/external/add-user",
       {
-        method:"POST",
+        method: "POST",
         headers:{
-          "Content-Type":"application/json",
-          "x-api-key": apiKey   // <-- lowercase to match backend
+          "Content-Type": "application/json",
+          "X-API-KEY": apiKey
         },
         body: JSON.stringify({
           name: name,
@@ -89,23 +115,25 @@ async function send(){
     const text = await res.text();
 
     if(res.ok){
-      msg.innerText = "✅ Successfully added";
+      msg.innerText = "✅ Student added successfully";
       msg.style.color = "green";
-      // Optional: clear form
+
+      // clear form
       document.getElementById("stdName").value = "";
       document.getElementById("stdAge").value = "";
       document.getElementById("stdEmail").value = "";
-    } else {
+    }else{
       msg.innerText = "❌ " + text;
       msg.style.color = "red";
     }
-  } catch(e){
-    msg.innerText = "❌ Network error or backend not reachable";
+
+  }catch(err){
+    msg.innerText = "❌ Network error or API not reachable";
     msg.style.color = "red";
-    console.error(e);
+    console.error(err);
   }
 }
 </script>
 
 </body>
-  </html>
+</html>
