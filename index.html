@@ -3,96 +3,118 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>API Generator / Student Submission</title>
+<title>Student Submission</title>
 
-<!-- Tailwind CSS CDN -->
+<!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-/* Notification box animation */
 @keyframes slideDown {
-  0% { transform: translateY(-20px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
+  from { transform: translateY(-20px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
 }
 .notification {
-  animation: slideDown 0.5s ease forwards;
+  animation: slideDown 0.4s ease forwards;
 }
 </style>
 </head>
 
-<body class="bg-gray-100 min-h-screen flex flex-col items-center p-4">
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
 
-<div class="w-full max-w-md bg-white rounded-lg shadow-lg p-6 mt-10">
-  <h2 class="text-2xl font-bold text-center mb-6 text-blue-600">Student Submission</h2>
+<div class="w-full max-w-md bg-white rounded-xl shadow-lg p-6">
+  <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">
+    External Student Submission
+  </h2>
 
-  <!-- API Key Input -->
-  <input id="apiKey" placeholder="Paste API Key" class="w-full p-3 mb-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+  <input id="apiKey" placeholder="Paste API Key"
+    class="w-full p-3 mb-3 border rounded focus:ring-2 focus:ring-blue-400">
 
-  <!-- Student Inputs -->
-  <input id="stdName" placeholder="Student Name" class="w-full p-3 mb-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-  <input id="stdAge" type="number" placeholder="Age" class="w-full p-3 mb-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-  <input id="stdEmail" placeholder="Email" class="w-full p-3 mb-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+  <input id="stdName" placeholder="Student Name"
+    class="w-full p-3 mb-3 border rounded focus:ring-2 focus:ring-blue-400">
 
-  <button onclick="send()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded transition duration-200">Submit Student</button>
+  <input id="stdAge" type="number" placeholder="Age"
+    class="w-full p-3 mb-3 border rounded focus:ring-2 focus:ring-blue-400">
 
-  <!-- Notification Box -->
-  <div id="msg" class="mt-4 text-center font-semibold text-lg"></div>
+  <input id="stdEmail" placeholder="Email"
+    class="w-full p-3 mb-4 border rounded focus:ring-2 focus:ring-blue-400">
+
+  <button onclick="send()"
+    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded transition">
+    Submit for Approval
+  </button>
+
+  <div id="msg" class="mt-4 text-center font-semibold"></div>
 </div>
 
 <script>
 async function send(){
-  const apiKey = document.getElementById("apiKey").value.trim();
-  const name = document.getElementById("stdName").value.trim();
-  const age = document.getElementById("stdAge").value.trim();
-  const email = document.getElementById("stdEmail").value.trim();
-  const msg = document.getElementById("msg");
+  const apiKey = apiKeyEl.value.trim();
+  const name   = stdName.value.trim();
+  const age    = stdAge.value.trim();
+  const email  = stdEmail.value.trim();
+  const msg    = document.getElementById("msg");
+
+  msg.className = "mt-4 text-center font-semibold"; // reset animation
 
   if(!apiKey || !name || !age || !email){
-    msg.textContent = "❌ All fields are required!";
+    msg.textContent = "❌ All fields are required";
     msg.style.color = "red";
     msg.classList.add("notification");
     return;
   }
 
-  msg.textContent = "⏳ Sending data...";
+  msg.textContent = "⏳ Sending request...";
   msg.style.color = "#333";
   msg.classList.add("notification");
 
-  try {
-    const res = await fetch("https://tahirvjakis-api.hf.space/external/add-user", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-API-KEY": apiKey
-      },
-      body: JSON.stringify({ name, age: Number(age), email })
-    });
+  try{
+    const res = await fetch(
+      "https://tahirvjakis-api.hf.space/external/add-user",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey   // ✅ FIXED
+        },
+        body: JSON.stringify({
+          name,
+          age: Number(age),
+          email
+        })
+      }
+    );
 
     const text = await res.text();
 
     if(res.ok){
-      msg.textContent = "✅ Submitted successfully! Waiting for approval.";
+      msg.textContent =
+        "✅ Submitted successfully!\n⏳ Waiting for admin approval.";
       msg.style.color = "green";
-      msg.classList.add("notification");
 
-      // Clear form fields
-      document.getElementById("stdName").value = "";
-      document.getElementById("stdAge").value = "";
-      document.getElementById("stdEmail").value = "";
+      stdName.value = "";
+      stdAge.value  = "";
+      stdEmail.value = "";
     } else {
-      msg.textContent = "❌ Error: " + text;
+      msg.textContent = "❌ " + text;
       msg.style.color = "red";
-      msg.classList.add("notification");
     }
 
-  } catch(err){
-    msg.textContent = "❌ Network error or backend unreachable!";
+    msg.classList.add("notification");
+
+  }catch(err){
+    msg.textContent = "❌ Server not reachable";
     msg.style.color = "red";
     msg.classList.add("notification");
     console.error(err);
   }
 }
+
+// element shortcuts
+const apiKeyEl = document.getElementById("apiKey");
+const stdName  = document.getElementById("stdName");
+const stdAge   = document.getElementById("stdAge");
+const stdEmail = document.getElementById("stdEmail");
 </script>
 
 </body>
-  </html>
+</html>
