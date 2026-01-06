@@ -4,33 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>External Student Form</title>
-
 <style>
-body {
+body{
   font-family: Arial, sans-serif;
   max-width: 450px;
   margin: 50px auto;
   padding: 20px;
   background: #f0f2f5;
 }
-h2 { text-align: center; margin-bottom: 20px; color: #2563eb; }
-input, button {
+h2{text-align:center; margin-bottom:20px;}
+input,button{
   width: 100%;
   padding: 12px;
   margin: 8px 0;
   font-size: 16px;
+  border-radius: 5px;
 }
-input { border: 1px solid #ccc; border-radius: 5px; }
-button {
+input{border:1px solid #ccc;}
+button{
   background: #2563eb;
   color: white;
   border: none;
-  border-radius: 5px;
   font-weight: bold;
   cursor: pointer;
 }
-button:hover { opacity: 0.9; }
-#msg {
+button:hover{opacity:0.9;}
+#msg{
   font-weight: bold;
   text-align: center;
   margin-top: 15px;
@@ -52,15 +51,15 @@ button:hover { opacity: 0.9; }
 <pre id="msg"></pre>
 
 <script>
-async function send() {
+async function send(){
   const apiKey = document.getElementById("apiKey").value.trim();
-  const name   = document.getElementById("stdName").value.trim();
-  const age    = document.getElementById("stdAge").value.trim();
-  const email  = document.getElementById("stdEmail").value.trim();
-  const msg    = document.getElementById("msg");
+  const name = document.getElementById("stdName").value.trim();
+  const age = document.getElementById("stdAge").value.trim();
+  const email = document.getElementById("stdEmail").value.trim();
+  const msg = document.getElementById("msg");
 
   if(!apiKey || !name || !age || !email){
-    msg.textContent = "❌ All fields are required!";
+    msg.textContent = "❌ All fields required";
     msg.style.color = "red";
     return;
   }
@@ -68,37 +67,32 @@ async function send() {
   msg.textContent = "⏳ Sending data...";
   msg.style.color = "#333";
 
-  try {
-    const res = await fetch("https://huggingface.co/spaces/tahirvjakis/student-fastapi/external/add-user", {
+  try{
+    // ✅ Send to YOUR main.py backend, not HuggingFace space directly
+    const res = await fetch("/external/add-user", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-API-KEY": apiKey
       },
-      body: JSON.stringify({
-        name: name,
-        age: Number(age),
-        email: email
-      })
+      body: JSON.stringify({ name, age: Number(age), email })
     });
 
     const data = await res.json();
 
-    if(res.ok && data.status === "pending"){
-      msg.textContent = "✅ Student submitted successfully!\nStatus: Pending approval.\nCheck your Gmail for notification.";
+    if(res.ok){
+      msg.textContent = "✅ Submitted successfully! Pending approval.";
       msg.style.color = "green";
-
-      // Clear form
       document.getElementById("stdName").value = "";
       document.getElementById("stdAge").value = "";
       document.getElementById("stdEmail").value = "";
-    } else {
-      msg.textContent = "❌ Error: " + JSON.stringify(data);
+    } else{
+      msg.textContent = "❌ Error:\n" + JSON.stringify(data);
       msg.style.color = "red";
     }
 
   } catch(err){
-    msg.textContent = "❌ Network error or backend unreachable\n" + err;
+    msg.textContent = "❌ Network error or backend unreachable!\n" + err;
     msg.style.color = "red";
     console.error(err);
   }
