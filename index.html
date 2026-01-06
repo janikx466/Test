@@ -3,48 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Student Registration - External</title>
+<title>External Student Form</title>
 
 <link rel="icon" type="image/png"
 href="https://res.cloudinary.com/dex1veqf2/image/upload/v1767539506/c8s8d0vrbtu4g5klfajj.png">
 
 <style>
-body {
-  font-family: Arial, sans-serif;
-  max-width: 420px;
-  margin: 50px auto;
-  padding: 20px;
-  background: #f5f7fb;
+body{
+  font-family: Arial;
+  max-width:420px;
+  margin:50px auto;
+  padding:20px;
+  background:#f5f7fb;
 }
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
+h2{text-align:center}
+input,button{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  font-size:15px;
 }
-input, button {
-  width: 100%;
-  padding: 12px;
-  margin: 8px 0;
-  font-size: 15px;
+button{
+  background:#2563eb;
+  color:white;
+  border:none;
+  border-radius:6px;
+  font-weight:bold;
+  cursor:pointer;
 }
-button {
-  background: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-}
-button:hover { opacity: 0.9; }
-#msg {
-  text-align: center;
-  font-weight: bold;
-  margin-top: 12px;
+button:hover{opacity:0.9}
+#msg{
+  text-align:center;
+  font-weight:bold;
+  margin-top:12px;
 }
 </style>
 </head>
+
 <body>
 
-<h2>Student Registration</h2>
+<h2>Student app</h2>
 
 <!-- 🔑 API KEY -->
 <input id="apiKey" placeholder="Paste API Key here">
@@ -59,14 +57,14 @@ button:hover { opacity: 0.9; }
 <p id="msg"></p>
 
 <script>
-async function send() {
+async function send(){
   const apiKey = document.getElementById("apiKey").value.trim();
   const name   = document.getElementById("stdName").value.trim();
   const age    = document.getElementById("stdAge").value.trim();
   const email  = document.getElementById("stdEmail").value.trim();
   const msg    = document.getElementById("msg");
 
-  if (!apiKey || !name || !age || !email) {
+  if(!apiKey || !name || !age || !email){
     msg.innerText = "❌ All fields required";
     msg.style.color = "red";
     return;
@@ -75,14 +73,14 @@ async function send() {
   msg.innerText = "⏳ Sending data...";
   msg.style.color = "#333";
 
-  try {
+  try{
     const res = await fetch(
-      "https://YOUR-HF-BACKEND/external/add-user", // 🔹 Replace with your deployed HF backend URL
+      "https://tahirvjakis-student-fastapi.hf.space/external/add-user",
       {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey   // API key header
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "x-api-key": apiKey
         },
         body: JSON.stringify({
           name: name,
@@ -94,19 +92,20 @@ async function send() {
 
     const data = await res.json();
 
-    if (res.ok) {
+    if(res.ok){
       msg.innerText = "✅ Submitted! Waiting for approval.";
       msg.style.color = "green";
-      // Clear form
-      document.getElementById("stdName").value = "";
-      document.getElementById("stdAge").value = "";
-      document.getElementById("stdEmail").value = "";
-    } else {
+
+      // clear form
+      document.getElementById("stdName").value="";
+      document.getElementById("stdAge").value="";
+      document.getElementById("stdEmail").value="";
+    }else{
       msg.innerText = "❌ " + (data.detail || "Error");
       msg.style.color = "red";
     }
 
-  } catch (err) {
+  }catch(err){
     msg.innerText = "❌ Backend unreachable / network error";
     msg.style.color = "red";
     console.error(err);
