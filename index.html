@@ -3,10 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <title>External Student Form</title>
-
 <link rel="icon" type="image/png"
 href="https://res.cloudinary.com/dex1veqf2/image/upload/v1767539506/c8s8d0vrbtu4g5klfajj.png">
-
 <style>
 body{
   font-family: Arial;
@@ -38,7 +36,6 @@ button:hover{opacity:0.9}
 }
 </style>
 </head>
-
 <body>
 
 <h2>Student Registration</h2>
@@ -63,11 +60,15 @@ async function send(){
   const email  = document.getElementById("stdEmail").value.trim();
   const msg    = document.getElementById("msg");
 
+  // ---------------- VALIDATION ----------------
   if(!apiKey || !name || !age || !email){
     msg.innerText = "❌ All fields required";
     msg.style.color = "red";
     return;
   }
+
+  // ---------------- DEBUG LOG ----------------
+  console.log("Submitting Student:", {apiKey, name, age, email});
 
   msg.innerText = "⏳ Sending data...";
   msg.style.color = "#333";
@@ -92,6 +93,7 @@ async function send(){
     const data = await res.json();
 
     if(res.ok){
+      console.log("✅ Backend Response:", data);
       msg.innerText = "✅ Submitted! Waiting for approval.";
       msg.style.color = "green";
 
@@ -100,14 +102,15 @@ async function send(){
       document.getElementById("stdAge").value="";
       document.getElementById("stdEmail").value="";
     }else{
+      console.error("❌ Backend Error:", data);
       msg.innerText = "❌ " + (data.detail || "Error");
       msg.style.color = "red";
     }
 
   }catch(err){
+    console.error("❌ Network / Backend Error:", err);
     msg.innerText = "❌ Backend unreachable / network error";
     msg.style.color = "red";
-    console.error(err);
   }
 }
 </script>
