@@ -61,8 +61,13 @@ async function send(){
   const msg    = document.getElementById("msg");
 
   // ---------------- VALIDATION ----------------
-  if(!apiKey || !name || !age || !email){
-    msg.innerText = "❌ All fields required";
+  if(!apiKey){
+    msg.innerText = "❌ API Key is required!";
+    msg.style.color = "red";
+    return;
+  }
+  if(!name || !age || !email){
+    msg.innerText = "❌ All fields are required!";
     msg.style.color = "red";
     return;
   }
@@ -80,7 +85,7 @@ async function send(){
         method:"POST",
         headers:{
           "Content-Type":"application/json",
-          "x-api-key": apiKey
+          "x-api-key": apiKey    // exact spelling
         },
         body: JSON.stringify({
           name: name,
@@ -103,7 +108,7 @@ async function send(){
       document.getElementById("stdEmail").value="";
     }else{
       console.error("❌ Backend Error:", data);
-      msg.innerText = "❌ " + (data.detail || "Error");
+      msg.innerText = "❌ " + (data.detail || "Unknown Error");
       msg.style.color = "red";
     }
 
